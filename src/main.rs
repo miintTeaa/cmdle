@@ -21,11 +21,11 @@ fn main() {
 
     match &args.command {
         Commands::Guess { word } => {
-            let word = match Word::from(word) {
+            let word = match Word::from(word.clone()) {
                 Err(e) => {
                     println!("Failed to guess word: {}", e);
                     return;
-                },
+                }
                 Ok(word) => word,
             };
             println!("Tried to guess {}", word);

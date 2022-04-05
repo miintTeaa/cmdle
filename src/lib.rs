@@ -30,14 +30,12 @@ pub struct Word {
 }
 
 impl Word {
-    pub fn from(text: &str) -> Result<Word, &str> {
-        let text = Self::validate(text.trim())?;
-        Ok(Word {
-            text: text.to_owned(),
-        })
+    pub fn from(text: String) -> Result<Word, &'static str> {
+        Self::validate(text.trim())?;
+        Ok(Word { text })
     }
 
-    fn validate(text: &str) -> Result<&str, &str> {
+    fn validate(text: &str) -> Result<(), &'static str> {
         if text.chars().count() != 5 {
             return Err("Word must be 5 characters exactly.");
         }
@@ -51,11 +49,11 @@ impl Word {
             return Err("Text must be alphabetical.");
         }
 
-        if !is_valid_guess(text)? {
+        if !is_valid_guess(&text)? {
             return Err("Not in the word dictionary.");
         }
 
-        Ok(text)
+        Ok(())
     }
 }
 
@@ -76,7 +74,7 @@ fn get_day(length: usize) -> usize {
         .unwrap()
 }
 
-fn get_daily_word() -> Result<String, &'static str> {
+fn get_daily_word() -> Result<Word, &'static str> {
     let goals = get_json_array("goals.json")?;
 
     let goals_count = goals.len();
@@ -88,7 +86,7 @@ fn get_daily_word() -> Result<String, &'static str> {
         .as_str()
         .expect("Word empty");
 
-    Ok(word.to_owned())
+    Ok(Word::from(word.to_owned())?)
 }
 
 fn is_valid_guess(guess: &str) -> Result<bool, &'static str> {
