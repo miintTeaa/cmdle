@@ -1,3 +1,4 @@
+use chrono::TimeZone;
 use std::fmt;
 
 const ALLOWED_CHARS: [char; 26] = [
@@ -38,4 +39,10 @@ impl fmt::Display for Word<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.text)
     }
+}
+
+fn get_day() -> i64 {
+    let wordle_epoch = chrono::Local.ymd(2021, 06, 19);
+    let date_now = chrono::Local::today();
+    date_now.signed_duration_since(wordle_epoch).num_days()
 }
