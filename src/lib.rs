@@ -83,21 +83,7 @@ fn get_daily_word() -> Result<String, &'static str> {
 }
 
 fn is_valid_guess(guess: &str) -> Result<bool, &'static str> {
-    let mut guess_file = match File::open("guesses.json") {
-        Err(_) => return Err("Could not open guesses.json"),
-        Ok(file) => file,
-    };
-
-    let mut guesses = String::new();
-    if let Err(_) = guess_file.read_to_string(&mut guesses) {
-        return Err("guesses.json is not valid utf8");
-    }
-
-    let guesses = match json::parse(&guesses) {
-        Err(_) => return Err("guesses.json is not valid json"),
-        Ok(guesses) if !guesses.is_array() => return Err("guesses.json is malformed"),
-        Ok(guesses) => guesses,
-    };
+    let guesses = get_json_array("guesses.json")?;
 
     Ok(guesses.members().any(|g| g.as_str().unwrap() == guess))
 }
