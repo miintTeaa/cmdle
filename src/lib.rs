@@ -1,6 +1,6 @@
 use chrono::TimeZone;
 use json;
-use std::{convert::From, fmt, fs::File, io::Read};
+use std::{fmt, fs::File, io::Read};
 
 const ALLOWED_CHARS: [char; 26] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
@@ -30,6 +30,13 @@ pub struct Word {
 }
 
 impl Word {
+    pub fn from(text: &str) -> Result<Word, &str> {
+        let text = Self::validate(text.trim())?;
+        Ok(Word {
+            text: text.to_owned(),
+        })
+    }
+
     fn validate(text: &str) -> Result<&str, &str> {
         if text.chars().count() != 5 {
             return Err("Word must be 5 characters exactly.");
@@ -49,12 +56,6 @@ impl Word {
         }
 
         Ok(text)
-    }
-}
-
-impl From<String> for Word {
-    fn from(text: String) -> Word {
-        Word { text }
     }
 }
 
