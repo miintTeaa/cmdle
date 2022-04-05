@@ -18,6 +18,13 @@ mod tests {
 }
 
 #[derive(Debug)]
+enum LetterResult {
+    Correct,
+    WrongPosition,
+    WrongLetter,
+}
+
+#[derive(Debug)]
 pub struct Word<'a> {
     text: &'a str,
 }
