@@ -82,7 +82,15 @@ struct Game {
 }
 
 impl Game {
-    pub fn from_json(mut value: JsonValue) -> Result<Game, &'static str> {
+    pub fn from_file(path: &str) -> Result<Game, &'static str> {
+        Self::from_json(load_json(path)?)
+    }
+
+    pub fn save_to_file(&self, path: &str) -> Result<(), &'static str> {
+        save_json(self.to_json(), path)
+    }
+
+    fn from_json(mut value: JsonValue) -> Result<Game, &'static str> {
         if !value.is_object() {
             return Err("Not valid json object");
         }
@@ -117,7 +125,7 @@ impl Game {
         Ok(Game { goal, guesses })
     }
 
-    pub fn to_json(&self) -> JsonValue {
+    fn to_json(&self) -> JsonValue {
         let goal: &str = &self.goal.text;
         let guesses: Vec<String> = (&self.guesses)
             .into_iter()
