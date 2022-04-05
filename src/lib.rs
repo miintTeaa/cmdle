@@ -102,5 +102,5 @@ fn is_valid_guess(guess: &str) -> Result<bool, &str> {
         Ok(guesses) => guesses,
     };
 
-    Ok(guesses.members().any(|g| g == guess))
+    Ok(guesses.members().any(|g| g.as_str().unwrap() == guess))
 }
