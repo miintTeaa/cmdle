@@ -32,6 +32,10 @@ impl Word<'_> {
             return Err("Text must be alphabetical.");
         }
 
+        if !is_valid_guess(text)? {
+            return Err("Not in the word dictionary.");
+        }
+
         Ok(text)
     }
 }
@@ -79,4 +83,24 @@ fn get_daily_word<'a>() -> Result<String, &'a str> {
         .expect("Word empty");
 
     Ok(word.to_owned())
+}
+
+fn is_valid_guess(guess: &str) -> Result<bool, &str> {
+    let mut guess_file = match File::open("goals.json") {
+        Err(_) => return Err("Could not open goals.json"),
+        Ok(file) => file,
+    };
+
+    let mut guesses = String::new();
+    if let Err(_) = guess_file.read_to_string(&mut guesses) {
+        return Err("goals.json is not valid utf8");
+    }
+
+    let guesses = match json::parse(&guesses) {
+        Err(_) => return Err("goals.json is not valid json"),
+        Ok(guesses) if !guesses.is_array() => return Err("goals.json is malformed"),
+        Ok(guesses) => guesses,
+    };
+
+    Ok(guesses.members().any(|g| g == guess))
 }
