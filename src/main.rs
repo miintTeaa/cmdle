@@ -1,6 +1,8 @@
 use clap::{Parser, Subcommand};
 use cmdle::Word;
 
+extern crate chrono;
+
 #[derive(Parser)]
 #[clap(author, version, about = "A word game for the command line.")]
 struct Args {
