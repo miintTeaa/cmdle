@@ -66,12 +66,14 @@ impl fmt::Display for Word {
 fn get_day(length: usize) -> usize {
     let wordle_epoch = chrono::Local.ymd(2021, 06, 19);
     let date_now = chrono::Local::today();
-    //TODO: Add wrapping to this
-    date_now
+
+    let date_diff: usize = date_now
         .signed_duration_since(wordle_epoch)
         .num_days()
         .try_into()
-        .unwrap()
+        .unwrap();
+
+    date_diff % length
 }
 
 fn get_daily_word() -> Result<Word, &'static str> {
