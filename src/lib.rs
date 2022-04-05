@@ -1,6 +1,6 @@
 use chrono::TimeZone;
-use json;
-use std::{fmt, fs::File, io::Read};
+use json::{self, object, JsonValue};
+use std::{convert::Into, fmt, fs::File, io::Read};
 
 const ALLOWED_CHARS: [char; 26] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
@@ -15,6 +15,107 @@ mod tests {
     fn make_guess() {
         assert_eq!(is_valid_guess("shave"), Ok(true))
     }
+
+    #[test]
+    fn game_to_json() {
+        let game = Game {
+            goal: Word::from("hello".to_string()).unwrap(),
+            guesses: vec![
+                Word::from("there".to_string()).unwrap(),
+                Word::from("carts".to_string()).unwrap(),
+                Word::from("fears".to_string()).unwrap(),
+            ],
+        };
+
+        let json_game = object! {
+            goal:"hello",
+            guesses:[
+                "there",
+                "carts",
+                "fears"
+            ]
+        };
+
+        assert_eq!(game.to_json(), json_game);
+    }
+
+    #[test]
+    fn json_to_game() {
+        let game = Game {
+            goal: Word::from("hello".to_string()).unwrap(),
+            guesses: vec![
+                Word::from("there".to_string()).unwrap(),
+                Word::from("carts".to_string()).unwrap(),
+                Word::from("fears".to_string()).unwrap(),
+            ],
+        };
+
+        let json_game = object! {
+            goal:"hello",
+            guesses:[
+                "there",
+                "carts",
+                "fears"
+            ]
+        };
+
+        assert_eq!(game, Game::from_json(json_game).unwrap());
+    }
+}
+
+#[derive(Debug, Eq, PartialEq)]
+struct Game {
+    goal: Word,
+    guesses: Vec<Word>,
+}
+
+impl Game {
+    pub fn from_json(mut value: json::JsonValue) -> Result<Game, &'static str> {
+        if !value.is_object() {
+            return Err("Not valid json object");
+        }
+        if !value.has_key("goal") {
+            return Err("Missing goal key");
+        }
+        if !value.has_key("guesses") {
+            return Err("Missing guesses key");
+        }
+
+        let guesses: Vec<Word> = value
+            .remove("guesses")
+            .members()
+            .filter_map(|guess| {
+                let guess = match guess.as_str() {
+                    Some(guess) => guess,
+                    None => return None,
+                };
+                Word::from(guess.to_string()).ok()
+            })
+            .collect();
+
+        if guesses.len() > 6 {
+            return Err("Too many guesses");
+        }
+
+        let goal = Word::from(match value.remove("goal").as_str() {
+            Some(goal) => goal.to_string(),
+            None => return Err("Goal key is not valid string"),
+        })?;
+
+        Ok(Game { goal, guesses })
+    }
+
+    pub fn to_json(&self) -> JsonValue {
+        let goal: &str = &self.goal.text;
+        let guesses: Vec<String> = (&self.guesses)
+            .into_iter()
+            .map(|guess| guess.text.clone())
+            .collect();
+        object! {
+            "goal": goal,
+            "guesses": guesses
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -24,7 +125,7 @@ enum LetterResult {
     WrongLetter,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Word {
     text: String,
 }
