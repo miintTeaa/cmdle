@@ -1,6 +1,6 @@
 use chrono::TimeZone;
 use json;
-use std::{fmt, fs::File, io::Read};
+use std::{convert::From, fmt, fs::File, io::Read};
 
 const ALLOWED_CHARS: [char; 26] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
@@ -25,16 +25,11 @@ enum LetterResult {
 }
 
 #[derive(Debug)]
-pub struct Word<'a> {
-    text: &'a str,
+pub struct Word {
+    text: String,
 }
 
-impl Word<'_> {
-    pub fn from(text: &str) -> Result<Word, &str> {
-        let text = Self::validate(text.trim())?;
-        Ok(Word { text })
-    }
-
+impl Word {
     fn validate(text: &str) -> Result<&str, &str> {
         if text.chars().count() != 5 {
             return Err("Word must be 5 characters exactly.");
@@ -57,9 +52,15 @@ impl Word<'_> {
     }
 }
 
-impl fmt::Display for Word<'_> {
+impl From<String> for Word {
+    fn from(text: String) -> Word {
+        Word { text }
+    }
+}
+
+impl fmt::Display for Word {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.text)
+        write!(f, "{}", &self.text)
     }
 }
 
