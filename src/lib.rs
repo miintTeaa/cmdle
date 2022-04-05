@@ -130,7 +130,7 @@ impl Game {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum LetterResult {
     Correct,
     WrongPosition,
@@ -167,6 +167,15 @@ impl Word {
         }
 
         Ok(())
+    }
+
+    /// Panics if index is above 5
+    pub fn get(&self, index: usize) -> char {
+        if index >= 5 {
+            panic!("Word index too large");
+        }
+
+        self.text.chars().nth(index).unwrap()
     }
 }
 
@@ -266,6 +275,20 @@ fn load_json(path: &str) -> Result<JsonValue, &'static str> {
         Err(e) => return Err(leak_into_str(format!("Failed to parse {}: {:?}", path, e))),
         Ok(value) => Ok(value),
     }
+}
+
+fn comp_words(guess: Word, goal: Word) -> [LetterResult; 5] {
+    let mut result = [LetterResult::WrongLetter; 5];
+    for i in 0..5 {
+        let guess_c = guess.get(i);
+        let goal_c = goal.get(i);
+        if guess_c == goal_c {
+            result[i] = LetterResult::Correct;
+        } else if goal.text.contains(guess_c) {
+            result[i] = LetterResult::WrongPosition;
+        }
+    }
+    result
 }
 
 /// Creates a &'static str from a String by leaking it.
