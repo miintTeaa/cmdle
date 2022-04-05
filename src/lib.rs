@@ -57,21 +57,8 @@ fn get_day(length: usize) -> usize {
         .unwrap()
 }
 
-fn get_daily_word<'a>() -> Result<String, &'a str> {
-    let mut goals_file = match File::open("goals.json") {
-        Err(_) => return Err("Could not open goals.json"),
-        Ok(file) => file,
-    };
-
-    let mut goals = String::new();
-    if let Err(_) = goals_file.read_to_string(&mut goals) {
-        return Err("goals.json is not valid utf8");
-    }
-    let goals = match json::parse(&goals) {
-        Err(_) => return Err("goals.json is not valid json"),
-        Ok(goals) if !goals.is_array() => return Err("goals.json is malformed"),
-        Ok(goals) => goals,
-    };
+fn get_daily_word() -> Result<String, &'static str> {
+    let goals = get_json_array("goals.json")?;
 
     let goals_count = goals.len();
 
@@ -85,22 +72,47 @@ fn get_daily_word<'a>() -> Result<String, &'a str> {
     Ok(word.to_owned())
 }
 
-fn is_valid_guess(guess: &str) -> Result<bool, &str> {
-    let mut guess_file = match File::open("goals.json") {
-        Err(_) => return Err("Could not open goals.json"),
+fn is_valid_guess(guess: &str) -> Result<bool, &'static str> {
+    let mut guess_file = match File::open("guesses.json") {
+        Err(_) => return Err("Could not open guesses.json"),
         Ok(file) => file,
     };
 
     let mut guesses = String::new();
     if let Err(_) = guess_file.read_to_string(&mut guesses) {
-        return Err("goals.json is not valid utf8");
+        return Err("guesses.json is not valid utf8");
     }
 
     let guesses = match json::parse(&guesses) {
-        Err(_) => return Err("goals.json is not valid json"),
-        Ok(guesses) if !guesses.is_array() => return Err("goals.json is malformed"),
+        Err(_) => return Err("guesses.json is not valid json"),
+        Ok(guesses) if !guesses.is_array() => return Err("guesses.json is malformed"),
         Ok(guesses) => guesses,
     };
 
     Ok(guesses.members().any(|g| g.as_str().unwrap() == guess))
+}
+
+fn get_json_array(path: &str) -> Result<json::JsonValue, &str> {
+    let mut file = match File::open(path) {
+        Err(_) => return Err(leak_into_str(format!("Could not open {}", path))),
+        Ok(file) => file,
+    };
+
+    let mut arr = String::new();
+    if let Err(_) = file.read_to_string(&mut arr) {
+        return Err(leak_into_str(format!("{} is not valid utf8", path)));
+    }
+
+    let arr = match json::parse(&arr) {
+        Err(_) => return Err(leak_into_str(format!("{} is not valid json", path))),
+        Ok(arr) if !arr.is_array() => return Err(leak_into_str(format!("{} is malformed", path))),
+        Ok(arr) => arr,
+    };
+
+    Ok(arr)
+}
+
+/// Creates a &'static str from a String by leaking it.
+fn leak_into_str(s: String) -> &'static str {
+    Box::leak(s.into_boxed_str())
 }
