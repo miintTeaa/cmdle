@@ -70,7 +70,7 @@ struct Game {
 }
 
 impl Game {
-    pub fn from_json(mut value: json::JsonValue) -> Result<Game, &'static str> {
+    pub fn from_json(mut value: JsonValue) -> Result<Game, &'static str> {
         if !value.is_object() {
             return Err("Not valid json object");
         }
@@ -198,7 +198,7 @@ fn is_valid_guess(guess: &str) -> Result<bool, &'static str> {
     Ok(guesses.members().any(|g| g.as_str().unwrap() == guess))
 }
 
-fn get_json_array(path: &str) -> Result<json::JsonValue, &str> {
+fn get_json_array(path: &str) -> Result<JsonValue, &str> {
     let mut file = match File::open(path) {
         Err(_) => return Err(leak_into_str(format!("Could not open {}", path))),
         Ok(file) => file,
