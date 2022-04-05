@@ -1,6 +1,11 @@
 use chrono::TimeZone;
 use json::{self, object, JsonValue};
-use std::{convert::Into, fmt, fs::File, io::Read};
+use std::{
+    convert::Into,
+    fmt,
+    fs::File,
+    io::{Read, Write},
+};
 
 const ALLOWED_CHARS: [char; 26] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
@@ -60,6 +65,13 @@ mod tests {
         };
 
         assert_eq!(game, Game::from_json(json_game).unwrap());
+    }
+
+    #[test]
+    fn try_save_load_json() {
+        assert!(save_json(JsonValue::Null, "test.json").is_ok());
+        assert!(load_json("test.json").is_ok());
+        assert_eq!(load_json("test.json").unwrap(), JsonValue::Null);
     }
 }
 
@@ -216,6 +228,44 @@ fn get_json_array(path: &str) -> Result<JsonValue, &str> {
     };
 
     Ok(arr)
+}
+
+fn save_json(json: JsonValue, path: &str) -> Result<(), &'static str> {
+    let file_result = File::options()
+        .write(true)
+        .create(true)
+        .read(false)
+        .open(path);
+    let mut file = match file_result {
+        Err(e) => return Err(leak_into_str(format!("Failed to open {}: {:?}", path, e))),
+        Ok(file) => file,
+    };
+
+    if let Err(e) = json.write_pretty(&mut file, 3) {
+        return Err(leak_into_str(format!(
+            "Failed to write to {}: {:?}",
+            path, e
+        )));
+    }
+
+    Ok(())
+}
+
+fn load_json(path: &str) -> Result<JsonValue, &'static str> {
+    let mut contents = String::new();
+    {
+        let mut file = match File::open(path) {
+            Err(e) => return Err(leak_into_str(format!("Failed to open {}: {:?}", path, e))),
+            Ok(file) => file,
+        };
+        if let Err(e) = file.read_to_string(&mut contents) {
+            return Err(leak_into_str(format!("Failed to read {}: {:?}", path, e)));
+        }
+    }
+    match json::parse(&contents) {
+        Err(e) => return Err(leak_into_str(format!("Failed to parse {}: {:?}", path, e))),
+        Ok(value) => Ok(value),
+    }
 }
 
 /// Creates a &'static str from a String by leaking it.
