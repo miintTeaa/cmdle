@@ -7,6 +7,16 @@ const ALLOWED_CHARS: [char; 26] = [
     't', 'u', 'v', 'w', 'x', 'y', 'z',
 ];
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn make_guess() {
+        assert_eq!(is_valid_guess("shave"), Ok(true))
+    }
+}
+
 #[derive(Debug)]
 pub struct Word<'a> {
     text: &'a str,
