@@ -358,6 +358,10 @@ fn comp_words(guess: &Word, goal: &Word) -> [LetterResult; 5] {
     result
 }
 
+pub fn setup_cwd() {
+    std::env::set_current_dir(std::env::current_exe().unwrap().as_path().parent().unwrap());
+}
+
 /// Creates a &'static str from a String by leaking it.
 fn leak_into_str(s: String) -> &'static str {
     Box::leak(s.into_boxed_str())

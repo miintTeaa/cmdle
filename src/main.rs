@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use cmdle::{get_daily_word, Game, LetterResult, Word};
+use cmdle::{get_daily_word, setup_cwd, Game, LetterResult, Word};
 use colored::Colorize;
 
 #[derive(Parser)]
@@ -21,6 +21,8 @@ enum Commands {
 
 fn main() {
     let args = Args::parse();
+
+    setup_cwd();
 
     if let Err(e) = do_commands(&args) {
         eprintln!("[ERR] {}", e);
