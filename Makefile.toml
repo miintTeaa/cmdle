@@ -1,0 +1,13 @@
+[tasks.setup]
+script_runner = "@duckscript"
+script = '''
+echo "Setting up debug profile..."
+
+mkdir target/debug
+cp goals.json target/debug/goals.json
+cp guesses.json target/debug/guesses.json
+
+mkdir target/release
+cp goals.json target/release/goals.json
+cp guesses.json target/release/guesses.json
+'''
