@@ -84,6 +84,10 @@ impl Game {
         }
     }
 
+    pub fn is_full(&self) -> bool {
+        self.guesses.len() >= 5
+    }
+
     pub fn add_guess(&mut self, guess: Word) {
         self.guesses.push(guess)
     }

@@ -44,6 +44,11 @@ fn do_commands(args: &Args) -> Result<(), &'static str> {
         }
         Commands::Guess { word } => {
             let mut game = Game::from_file("save.json")?;
+
+            if game.is_full() {
+                return Err("Out of guesses! Run \"cmdle check\" to see results.");
+            }
+
             println!("{}", game.goal); //Debug
             let word = match Word::from(word.clone()) {
                 Err(e) => return Err(e),
