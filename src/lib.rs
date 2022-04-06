@@ -4,7 +4,7 @@ use std::{
     convert::Into,
     fmt,
     fs::File,
-    io::{Read, Write},
+    io::{Read},
 };
 
 const ALLOWED_CHARS: [char; 26] = [
