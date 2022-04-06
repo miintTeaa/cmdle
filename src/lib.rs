@@ -1,11 +1,6 @@
 use chrono::TimeZone;
 use json::{self, object, JsonValue};
-use std::{
-    convert::Into,
-    fmt,
-    fs::File,
-    io::{Read},
-};
+use std::{convert::Into, fmt, fs::File, io::Read};
 
 const ALLOWED_CHARS: [char; 26] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
