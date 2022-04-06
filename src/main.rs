@@ -22,19 +22,17 @@ enum Commands {
 
 fn main() {
     let args = Args::parse();
-    let mut stdout = StandardStream::stdout(ColorChoice::Always);
 
-    if let Err(e) = do_commands(&args, &mut stdout) {
+    if let Err(e) = do_commands(&args) {
         eprintln!("[ERR] {}", e);
     }
 }
 
-#[allow(unused_must_use)]
-fn do_commands(args: &Args, mut out: &mut StandardStream) -> Result<(), &'static str> {
+fn do_commands(args: &Args) -> Result<(), &'static str> {
     Ok(match &args.command {
         Commands::Daily => {
             (Game::new(get_daily_word()?)).save_to_file("save.json")?;
-            writeln!(&mut out, "Started new game with daily word.");
+            println!("Started new game with daily word.");
         }
         Commands::Guess { word } => {
             let game = Game::from_file("save.json")?;
@@ -45,29 +43,36 @@ fn do_commands(args: &Args, mut out: &mut StandardStream) -> Result<(), &'static
             };
 
             let results = game.compare_to_goal(&word);
-            let correct = ColorSpec::new()
-                .set_fg(Some(Color::Black))
-                .set_bg(Some(Color::Green))
-                .to_owned();
-            let wrong_pos = ColorSpec::new()
-                .set_fg(Some(Color::Black))
-                .set_bg(Some(Color::Yellow))
-                .to_owned();
-            let wrong_ltr = ColorSpec::new()
-                .set_fg(Some(Color::Black))
-                .set_bg(Some(Color::Red))
-                .to_owned();
-            let default = ColorSpec::new().to_owned();
-            for i in 0..5 {
-                match results[i] {
-                    LetterResult::Correct => out.set_color(&correct),
-                    LetterResult::WrongPosition => out.set_color(&wrong_pos),
-                    LetterResult::WrongLetter => out.set_color(&wrong_ltr),
-                };
-                write!(out, "{}", word.get(i));
-            }
-            out.set_color(&default);
-            write!(out, "\n");
+            print_word(word, results);
         }
     })
+}
+
+#[allow(unused_must_use)] // This is fine since it should panic if it can't write to stdout anyways.
+fn print_word(word: Word, results: [LetterResult; 5]) {
+    let mut out = StandardStream::stdout(ColorChoice::Always);
+
+    let correct = ColorSpec::new()
+        .set_fg(Some(Color::Black))
+        .set_bg(Some(Color::Green))
+        .to_owned();
+    let wrong_pos = ColorSpec::new()
+        .set_fg(Some(Color::Black))
+        .set_bg(Some(Color::Yellow))
+        .to_owned();
+    let wrong_ltr = ColorSpec::new()
+        .set_fg(Some(Color::Black))
+        .set_bg(Some(Color::Red))
+        .to_owned();
+    let default = ColorSpec::new().to_owned();
+    for i in 0..5 {
+        match results[i] {
+            LetterResult::Correct => out.set_color(&correct),
+            LetterResult::WrongPosition => out.set_color(&wrong_pos),
+            LetterResult::WrongLetter => out.set_color(&wrong_ltr),
+        };
+        write!(out, "{}", word.get(i));
+    }
+    out.set_color(&default);
+    write!(out, "\n");
 }
