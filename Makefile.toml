@@ -7,7 +7,18 @@ mkdir target/debug
 cp goals.json target/debug/goals.json
 cp guesses.json target/debug/guesses.json
 
+echo "Setting up release profile..."
+
 mkdir target/release
 cp goals.json target/release/goals.json
 cp guesses.json target/release/guesses.json
+'''
+
+[tasks.pack]
+description = "Packages the files into a zip folder."
+script_runner = "@duckscript"
+script = '''
+exec cargo build --release
+mkdir target/packed
+exec 7z a -tzip target/packed/cmdle.zip goals.json guesses.json target/release/cmdle.exe
 '''
