@@ -76,18 +76,29 @@ mod tests {
 }
 
 #[derive(Debug, Eq, PartialEq)]
-struct Game {
-    goal: Word,
-    guesses: Vec<Word>,
+pub struct Game {
+    pub goal: Word,
+    pub guesses: Vec<Word>,
 }
 
 impl Game {
+    pub fn new(word: Word) -> Game {
+        Game {
+            goal: word,
+            guesses: vec![],
+        }
+    }
+
     pub fn from_file(path: &str) -> Result<Game, &'static str> {
         Self::from_json(load_json(path)?)
     }
 
     pub fn save_to_file(&self, path: &str) -> Result<(), &'static str> {
         save_json(self.to_json(), path)
+    }
+
+    pub fn compare_to_goal(&self, guess: &Word) -> [LetterResult; 5] {
+        comp_words(guess, &self.goal)
     }
 
     fn from_json(mut value: JsonValue) -> Result<Game, &'static str> {
@@ -138,11 +149,23 @@ impl Game {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-enum LetterResult {
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum LetterResult {
     Correct,
     WrongPosition,
     WrongLetter,
+}
+
+impl fmt::Display for LetterResult {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::fmt::Result {
+        if self == &Self::Correct {
+            write!(f, "{}", "O")
+        } else if self == &Self::WrongPosition {
+            write!(f, "{}", "X")
+        } else {
+            write!(f, "{}", "-")
+        }
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -206,7 +229,7 @@ fn get_day(length: usize) -> usize {
     date_diff % length
 }
 
-fn get_daily_word() -> Result<Word, &'static str> {
+pub fn get_daily_word() -> Result<Word, &'static str> {
     let goals = get_json_array("goals.json")?;
 
     let goals_count = goals.len();
@@ -285,7 +308,7 @@ fn load_json(path: &str) -> Result<JsonValue, &'static str> {
     }
 }
 
-fn comp_words(guess: Word, goal: Word) -> [LetterResult; 5] {
+fn comp_words(guess: &Word, goal: &Word) -> [LetterResult; 5] {
     let mut result = [LetterResult::WrongLetter; 5];
     for i in 0..5 {
         let guess_c = guess.get(i);
