@@ -46,7 +46,7 @@ fn do_commands(args: &Args) -> Result<(), &'static str> {
                 return Err("Out of guesses! Run \"cmdle check\" to see results.");
             }
 
-            println!("{}", game.goal); //Debug
+            //println!("{}", game.goal); //Debug
             let word = match Word::from(word.clone()) {
                 Err(e) => return Err(e),
                 Ok(word) => word,
