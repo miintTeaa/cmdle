@@ -2,8 +2,6 @@ use clap::{Parser, Subcommand};
 use cmdle::{get_daily_word, Game, LetterResult, Word};
 use colored::Colorize;
 
-extern crate chrono;
-
 #[derive(Parser)]
 #[clap(author, version, about = "A word game for the command line.")]
 struct Args {
