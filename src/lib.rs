@@ -84,6 +84,22 @@ impl Game {
         }
     }
 
+    pub fn get_goal(&self) -> Word {
+        self.goal.clone()
+    }
+
+    pub fn is_won(&self) -> bool {
+        let last = self.guesses.last();
+        if last.is_none() {
+            return false;
+        };
+        last.unwrap() == &self.goal
+    }
+
+    pub fn is_lost(&self) -> bool {
+        return self.is_full() && !self.is_won();
+    }
+
     pub fn is_full(&self) -> bool {
         self.guesses.len() >= 5
     }
@@ -175,7 +191,7 @@ impl fmt::Display for LetterResult {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Word {
     text: String,
 }

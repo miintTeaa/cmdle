@@ -37,10 +37,7 @@ fn do_commands(args: &Args) -> Result<(), &'static str> {
         }
         Commands::Check => {
             let game = Game::from_file("save.json")?;
-            for guess in game.get_guess_iterator() {
-                let results = game.compare_to_goal(guess);
-                print_word(guess, results);
-            }
+            print_game(&game);
         }
         Commands::Guess { word } => {
             let mut game = Game::from_file("save.json")?;
@@ -56,29 +53,76 @@ fn do_commands(args: &Args) -> Result<(), &'static str> {
             };
 
             game.add_guess(word);
-            for guess in game.get_guess_iterator() {
-                let results = game.compare_to_goal(guess);
-                print_word(guess, results);
-            }
+            print_game(&game);
 
             game.save_to_file("save.json")?;
         }
     })
 }
 
+fn print_game(game: &Game) {
+    println!("{}", "C M D L E".black().on_bright_white());
+    println!("{}", "         ".on_white());
+    for guess in game.get_guess_iterator() {
+        let results = game.compare_to_goal(guess);
+        print!("{}", "  ".on_white());
+        print_word(guess, results);
+        println!("{}", "  ".on_white());
+    }
+    println!("{}", "         ".on_white());
+    if game.is_won() {
+        println!(
+            "{}{}{}",
+            "  ".on_white(),
+            //
+            (&game.get_goal().to_string())
+                .to_uppercase()
+                .black()
+                .on_bright_green(),
+            //
+            "  ".on_white()
+        );
+        println!("{}", "         ".on_white());
+    } else if game.is_lost() {
+        println!(
+            "{}{}{}",
+            "  ".on_white(),
+            //
+            (&game.get_goal().to_string())
+                .to_uppercase()
+                .black()
+                .on_bright_red(),
+            //
+            "  ".on_white()
+        );
+        println!("{}", "         ".on_white());
+    }
+}
+
 fn print_word(word: &Word, results: [LetterResult; 5]) {
     for i in 0..5 {
         match results[i] {
             LetterResult::Correct => {
-                print!("{}", format!("{}", word.get(i)).black().on_bright_green())
+                print!(
+                    "{}",
+                    format!("{}", word.get(i))
+                        .to_uppercase()
+                        .black()
+                        .on_bright_green()
+                )
             }
             LetterResult::WrongPosition => {
-                print!("{}", format!("{}", word.get(i)).black().on_bright_yellow())
+                print!(
+                    "{}",
+                    format!("{}", word.get(i))
+                        .to_uppercase()
+                        .black()
+                        .on_bright_yellow()
+                )
             }
             LetterResult::WrongLetter => {
-                print!("{}", word.get(i))
+                print!("{}", format!("{}", word.get(i)).to_uppercase())
             }
         };
     }
-    print!("\n");
 }
