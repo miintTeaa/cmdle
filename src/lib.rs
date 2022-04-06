@@ -84,6 +84,14 @@ impl Game {
         }
     }
 
+    pub fn add_guess(&mut self, guess: Word) {
+        self.guesses.push(guess)
+    }
+
+    pub fn get_guess_iterator(&self) -> std::slice::Iter<Word> {
+        return (&self.guesses).into_iter();
+    }
+
     pub fn from_file(path: &str) -> Result<Game, &'static str> {
         Self::from_json(load_json(path)?)
     }
