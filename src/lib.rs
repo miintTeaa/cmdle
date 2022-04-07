@@ -2,7 +2,7 @@ use chrono::TimeZone;
 use json::{self, object, JsonValue};
 use std::{convert::Into, fmt, fs::File, io::Read};
 
-const ALLOWED_CHARS: [char; 26] = [
+pub const ALPHABET: [char; 26] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
     't', 'u', 'v', 'w', 'x', 'y', 'z',
 ];
@@ -82,6 +82,38 @@ impl Game {
             goal: word,
             guesses: vec![],
         }
+    }
+
+    pub fn letter_list(&self) -> [LetterStatus; 26] {
+        let mut status = [LetterStatus::Unused; 26];
+
+        self.get_guess_iterator()
+            .map(|guess| (guess.to_string().to_owned(), self.compare_to_goal(guess)))
+            .for_each(|(guess_str, result)| {
+                for i in 0..5 {
+                    let c = guess_str.chars().nth(i).unwrap();
+                    let alphabet_pos = ALPHABET
+                        .iter()
+                        .position(|ch| &c == ch)
+                        .expect(&format!("Couldn't find {} in alphabet", c));
+                    match result[i] {
+                        LetterResult::Correct => {
+                            status[alphabet_pos] = LetterStatus::FoundPosition;
+                        }
+                        LetterResult::WrongPosition => {
+                            if status[alphabet_pos] == LetterStatus::FoundPosition {
+                                continue;
+                            }
+                            status[alphabet_pos] = LetterStatus::FoundLetter;
+                        }
+                        LetterResult::WrongLetter => {
+                            status[alphabet_pos] = LetterStatus::NotPresent;
+                        }
+                    };
+                }
+            });
+
+        status
     }
 
     pub fn guess_num(&self) -> usize {
@@ -183,6 +215,14 @@ pub enum LetterResult {
     WrongLetter,
 }
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum LetterStatus {
+    FoundLetter,
+    FoundPosition,
+    NotPresent,
+    Unused,
+}
+
 impl fmt::Display for LetterResult {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::fmt::Result {
         if self == &Self::Correct {
@@ -215,7 +255,7 @@ impl Word {
             return Err("Text must be ascii.");
         }
 
-        let contains_bad_char = text.chars().find(|s| !ALLOWED_CHARS.contains(&s)).is_some();
+        let contains_bad_char = text.chars().find(|s| !ALPHABET.contains(&s)).is_some();
         if contains_bad_char {
             return Err("Text must be alphabetical.");
         }

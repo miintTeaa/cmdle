@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use cmdle::{get_daily_word, setup_cwd, Game, LetterResult, Word};
+use cmdle::{get_daily_word, setup_cwd, Game, LetterResult, LetterStatus, Word, ALPHABET};
 use colored::Colorize;
 
 #[derive(Parser)]
@@ -65,7 +65,28 @@ fn do_commands(args: &Args) -> Result<(), &'static str> {
 
 fn print_game(game: &Game) {
     let blank_line = || println!("{}", "         ".on_white());
-    let bordered = |b: &str| println!("{}{}{}", " ".on_white(), b, " ".on_white());
+    //This will only work with odd length strings
+    let bordered = |b: &str, size: usize| {
+        let mut spacing = String::new();
+        for _ in 0..size {
+            spacing.push(' ');
+        }
+        println!("{}{}{}", spacing.on_white(), b, spacing.on_white())
+    };
+    let thin_bordered = |b: &str, size: usize| {
+        let mut spacing = String::new();
+        for _ in 0..(size - 1) {
+            spacing.push(' ');
+        }
+        println!(
+            "{}{}{}{}{}",
+            " ".on_white(),
+            spacing.on_black(),
+            b,
+            spacing.on_black(),
+            " ".on_white()
+        )
+    };
 
     // Printing title
     println!("{}", "C M D L E".black().on_bright_white());
@@ -76,27 +97,54 @@ fn print_game(game: &Game) {
     // Printing guesses
     for guess in game.get_guess_iterator() {
         let results = game.compare_to_goal(guess);
-        bordered(&format_word(guess, results));
+        thin_bordered(&format_word(guess, results), 2);
     }
     for _ in 0..(5 - game.guess_num()) {
-        bordered("       ");
+        thin_bordered(" ", 4);
     }
     //
 
     blank_line();
-    
+
     // Printing goal
     let goal = game.get_goal().to_string().to_uppercase().black().clone();
     if game.is_won() {
-        bordered(&goal.on_bright_green());
+        //Must convert to normal String to preserve color
+        bordered(&goal.on_bright_green().to_string(), 2);
     } else if game.is_lost() {
-        bordered(&goal.on_bright_red());
+        bordered(&goal.on_bright_red().to_string(), 2);
     } else {
         blank_line();
     }
     //
 
     blank_line();
+
+    // Printing letter list
+    let format_letter = |c: &char, status: &LetterStatus| {
+        let c = c.to_string().to_uppercase();
+        //I'm going to rename these later because I chose pretty confusing names for them
+        match status {
+            LetterStatus::FoundPosition => c.bright_green(),
+            LetterStatus::FoundLetter => c.bright_yellow(),
+            LetterStatus::NotPresent => c.red(),
+            LetterStatus::Unused => c.underline(),
+        }
+    };
+
+    let letters = game.letter_list();
+    for i in 0..5 {
+        for j in 0..5 {
+            let c = format_letter(ALPHABET.get(i * 5 + j).unwrap(), &letters[i * 5 + j]);
+            print!("{}", c);
+            if j != 4 {
+                print!(" ");
+            }
+        }
+        println!();
+    }
+    let c = format_letter(&'z', &letters[25]);
+    println!("    {}    ", c);
 }
 
 fn format_word(word: &Word, results: [LetterResult; 5]) -> String {
