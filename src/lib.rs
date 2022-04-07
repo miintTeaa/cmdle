@@ -362,8 +362,19 @@ fn comp_words(guess: &Word, goal: &Word) -> [LetterResult; 5] {
     result
 }
 
-pub fn setup_cwd() {
-    std::env::set_current_dir(std::env::current_exe().unwrap().as_path().parent().unwrap());
+pub fn setup_cwd() -> Result<(), &'static str> {
+    let path = match std::env::current_exe() {
+        Ok(exe_path) => exe_path,
+        Err(_) => return Err("Failed to get executable path"),
+    };
+    let path = match path.as_path().parent() {
+        Some(path) => path,
+        None => return Err("Could not get exe parent dir"),
+    };
+    if let Err(_) = std::env::set_current_dir(path) {
+        return Err("Failed to set working directory");
+    }
+    Ok(())
 }
 
 /// Creates a &'static str from a String by leaking it.

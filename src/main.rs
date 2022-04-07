@@ -22,7 +22,9 @@ enum Commands {
 fn main() {
     let args = Args::parse();
 
-    setup_cwd();
+    if let Err(e) = setup_cwd() {
+        eprintln!("[ERR] {}", e);
+    }
 
     if let Err(e) = do_commands(&args) {
         eprintln!("[ERR] {}", e);
