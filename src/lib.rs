@@ -1,5 +1,6 @@
 use chrono::TimeZone;
 use json::{self, object, JsonValue};
+use std::collections::HashMap;
 use std::{convert::Into, fmt, fs::File, io::Read};
 
 pub const ALPHABET: [char; 26] = [
@@ -390,13 +391,37 @@ fn load_json(path: &str) -> Result<JsonValue, &'static str> {
 
 fn comp_words(guess: &Word, goal: &Word) -> [LetterResult; 5] {
     let mut result = [LetterResult::WrongLetter; 5];
+    // HashMap where each key is a letter in the goal, and the value is how many times that letter shows up
+    // Does not have entries for letters that are not in the goal
+    let mut letter_count =
+        goal.text
+            .clone()
+            .chars()
+            .fold(HashMap::new(), |mut acc: HashMap<char, u32>, c| {
+                if !acc.contains_key(&c) {
+                    acc.insert(c, 1);
+                    return acc;
+                }
+                acc.insert(c, acc.get(&c).unwrap() + 1);
+                acc
+            });
+
     for i in 0..5 {
         let guess_c = guess.get(i);
         let goal_c = goal.get(i);
+
+        let count = *letter_count.get(&guess_c).unwrap_or(&0);
+
+        if count <= 0 {
+            continue;
+        }
+
         if guess_c == goal_c {
             result[i] = LetterResult::Correct;
+            letter_count.insert(guess_c, count - 1);
         } else if goal.text.contains(guess_c) {
             result[i] = LetterResult::WrongPosition;
+            letter_count.insert(guess_c, count - 1);
         }
     }
     result
