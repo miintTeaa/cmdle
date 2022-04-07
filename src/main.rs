@@ -64,75 +64,71 @@ fn do_commands(args: &Args) -> Result<(), &'static str> {
 }
 
 fn print_game(game: &Game) {
+    let blank_line = || println!("{}", "         ".on_white());
+    let bordered = |b: &str| println!("{}{}{}", " ".on_white(), b, " ".on_white());
+
+    // Printing title
     println!("{}", "C M D L E".black().on_bright_white());
-    println!("{}", "         ".on_white());
+    //
+
+    blank_line();
+
+    // Printing guesses
     for guess in game.get_guess_iterator() {
         let results = game.compare_to_goal(guess);
-        print!("{}", "  ".on_white());
-        print_word(guess, results);
-        println!("{}", "  ".on_white());
+        bordered(&format_word(guess, results));
     }
     for _ in 0..(5 - game.guess_num()) {
-        println!("{}       {}", " ".on_white(), " ".on_white());
+        bordered("       ");
     }
-    println!("{}", "         ".on_white());
+    //
+
+    blank_line();
+    
+    // Printing goal
+    let goal = game.get_goal().to_string().to_uppercase().black().clone();
     if game.is_won() {
-        println!(
-            "{}{}{}",
-            "  ".on_white(),
-            //
-            (&game.get_goal().to_string())
-                .to_uppercase()
-                .black()
-                .on_bright_green(),
-            //
-            "  ".on_white()
-        );
-        println!("{}", "         ".on_white());
+        bordered(&goal.on_bright_green());
     } else if game.is_lost() {
-        println!(
-            "{}{}{}",
-            "  ".on_white(),
-            //
-            (&game.get_goal().to_string())
-                .to_uppercase()
-                .black()
-                .on_bright_red(),
-            //
-            "  ".on_white()
-        );
-        println!("{}", "         ".on_white());
+        bordered(&goal.on_bright_red());
     } else {
-        println!("{}", "         ".on_white());
-        println!("{}", "         ".on_white());
-        println!("{}", "         ".on_white());
+        blank_line();
     }
+    //
+
+    blank_line();
 }
 
-fn print_word(word: &Word, results: [LetterResult; 5]) {
+fn format_word(word: &Word, results: [LetterResult; 5]) -> String {
+    let join = |a: String, b: String| format!("{}{}", a, b);
+    let join_colored = |a: String, b: colored::ColoredString| format!("{}{}", a, b);
+    let mut buffer = String::new();
     for i in 0..5 {
         match results[i] {
             LetterResult::Correct => {
-                print!(
-                    "{}",
-                    format!("{}", word.get(i))
+                buffer = join_colored(
+                    buffer,
+                    word.get(i)
+                        .to_string()
                         .to_uppercase()
                         .black()
-                        .on_bright_green()
+                        .on_bright_green(),
                 )
             }
             LetterResult::WrongPosition => {
-                print!(
-                    "{}",
-                    format!("{}", word.get(i))
+                buffer = join_colored(
+                    buffer,
+                    word.get(i)
+                        .to_string()
                         .to_uppercase()
                         .black()
-                        .on_bright_yellow()
+                        .on_bright_yellow(),
                 )
             }
             LetterResult::WrongLetter => {
-                print!("{}", format!("{}", word.get(i)).to_uppercase())
+                buffer = join(buffer, word.get(i).to_string().to_uppercase());
             }
         };
     }
+    buffer
 }
