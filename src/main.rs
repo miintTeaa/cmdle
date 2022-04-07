@@ -99,7 +99,7 @@ fn print_game(game: &Game) {
         let results = game.compare_to_goal(guess);
         thin_bordered(&format_word(guess, results), 2);
     }
-    for _ in 0..(5 - game.guess_num()) {
+    for _ in 0..(6 - game.guess_num()) {
         thin_bordered(" ", 4);
     }
     //

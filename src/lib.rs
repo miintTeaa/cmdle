@@ -138,7 +138,7 @@ impl Game {
     }
 
     pub fn is_full(&self) -> bool {
-        self.guesses.len() >= 5
+        self.guesses.len() >= 6
     }
 
     pub fn add_guess(&mut self, guess: Word) {
