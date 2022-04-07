@@ -48,7 +48,7 @@ fn do_commands(args: &Args) -> Result<(), &'static str> {
             if game.is_lost() {
                 return Err("Out of guesses! Run \"cmdle check\" to see results.");
             } else if game.is_won() {
-                return Err("You've already won! Run \"cmdle check\" to see results.")
+                return Err("You've already won! Run \"cmdle check\" to see results.");
             }
 
             //println!("{}", game.goal); //Debug
