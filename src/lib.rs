@@ -84,6 +84,10 @@ impl Game {
         }
     }
 
+    pub fn guess_num(&self) -> usize {
+        self.guesses.len()
+    }
+
     pub fn get_goal(&self) -> Word {
         self.goal.clone()
     }

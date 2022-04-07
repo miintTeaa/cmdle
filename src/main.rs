@@ -32,8 +32,9 @@ fn main() {
 fn do_commands(args: &Args) -> Result<(), &'static str> {
     Ok(match &args.command {
         Commands::Daily => {
-            (Game::new(get_daily_word()?)).save_to_file("save.json")?;
-            println!("Started new game with daily word.");
+            let game = Game::new(get_daily_word()?);
+            game.save_to_file("save.json")?;
+            print_game(&game);
         }
         Commands::Check => {
             let game = Game::from_file("save.json")?;
@@ -69,6 +70,9 @@ fn print_game(game: &Game) {
         print_word(guess, results);
         println!("{}", "  ".on_white());
     }
+    for _ in 0..(5 - game.guess_num()) {
+        println!("{}       {}", " ".on_white(), " ".on_white());
+    }
     println!("{}", "         ".on_white());
     if game.is_won() {
         println!(
@@ -95,6 +99,10 @@ fn print_game(game: &Game) {
             //
             "  ".on_white()
         );
+        println!("{}", "         ".on_white());
+    } else {
+        println!("{}", "         ".on_white());
+        println!("{}", "         ".on_white());
         println!("{}", "         ".on_white());
     }
 }
