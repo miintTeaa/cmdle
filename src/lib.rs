@@ -71,7 +71,7 @@ mod tests {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub struct Game {
     pub goal: Word,
     pub guesses: Vec<Word>,
