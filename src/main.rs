@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use cmdle::{get_daily_word, setup_cwd, Game, LetterResult, LetterStatus, Word, ALPHABET};
+use cmdle::{game::Game, word::Word, *};
 use colored::Colorize;
 
 #[derive(Parser)]
